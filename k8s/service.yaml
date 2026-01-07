@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: boltpipeline
+  namespace: boltpipeline
+  labels:
+    app: boltpipeline
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: boltpipeline
