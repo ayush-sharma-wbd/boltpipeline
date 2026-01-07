@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  boltpipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: boltpipeline
+    ports:
+      - "3000:3000"
+      - "9090:9090"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/boltpipeline
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - boltpipeline-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: boltpipeline-postgres
+    environment:
+      - POSTGRES_DB=boltpipeline
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - boltpipeline-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: boltpipeline-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - boltpipeline-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  boltpipeline-network:
+    driver: bridge

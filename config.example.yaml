@@ -1,0 +1,93 @@
+# Boltpipeline Configuration
+
+service:
+  name: boltpipeline
+  version: 1.0.0
+  port: 3000
+  host: 0.0.0.0
+
+pipeline:
+  stages:
+    - name: build
+      enabled: true
+      timeout: 600
+      retry: 3
+    - name: test
+      enabled: true
+      timeout: 300
+      retry: 2
+    - name: deploy
+      enabled: true
+      timeout: 900
+      retry: 1
+
+  workers:
+    max: 10
+    min: 2
+    scaling:
+      enabled: true
+      metric: cpu
+      threshold: 80
+
+database:
+  type: postgresql
+  host: localhost
+  port: 5432
+  name: boltpipeline
+  pool:
+    min: 2
+    max: 10
+    idle_timeout: 30000
+
+cache:
+  type: redis
+  host: localhost
+  port: 6379
+  ttl: 3600
+
+logging:
+  level: info
+  format: json
+  outputs:
+    - console
+    - file
+  file:
+    path: logs/boltpipeline.log
+    max_size: 100MB
+    max_files: 10
+
+monitoring:
+  enabled: true
+  metrics:
+    port: 9090
+    path: /metrics
+  health_check:
+    enabled: true
+    path: /health
+    interval: 30
+
+security:
+  authentication:
+    enabled: true
+    type: jwt
+  rate_limiting:
+    enabled: true
+    max_requests: 100
+    window: 60
+  cors:
+    enabled: true
+    origins:
+      - http://localhost:3000
+      - https://example.com
+
+notifications:
+  enabled: true
+  channels:
+    - email
+    - slack
+  email:
+    smtp_host: smtp.example.com
+    smtp_port: 587
+    from: noreply@example.com
+  slack:
+    webhook_url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
